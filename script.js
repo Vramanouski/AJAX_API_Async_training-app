@@ -1,7 +1,7 @@
-'use strict';
+"use strict";
 
-const btn = document.querySelector('.btn-country');
-const countriesContainer = document.querySelector('.countries');
+const btn = document.querySelector(".btn-country");
+const countriesContainer = document.querySelector(".countries");
 
 //////////////////////////////////////////////////////
 
@@ -39,7 +39,7 @@ const countriesContainer = document.querySelector('.countries');
 //   });
 // };
 
-const displayCountry = function (data, className = '') {
+const displayCountry = function (data, className = "") {
   const currencies = data.currencies;
   const currencyName = Object.values(currencies)[0].name;
   const currencySymbol = Object.values(currencies)[0].symbol;
@@ -61,7 +61,7 @@ const displayCountry = function (data, className = '') {
   </div>
 </article>`;
 
-  countriesContainer.insertAdjacentHTML('beforeend', html);
+  countriesContainer.insertAdjacentHTML("beforeend", html);
   countriesContainer.style.opacity = 1;
 };
 
@@ -102,16 +102,16 @@ const displayCountry = function (data, className = '') {
 
 const getCountryData = function (countryName) {
   fetch(`https://restcountries.com/v3.1/name/${countryName}`)
-    .then(response => response.json())
-    .then(data => {
+    .then((response) => response.json())
+    .then((data) => {
       displayCountry(data[0]);
       const firstNeighbour = data[0].borders[0];
       if (!firstNeighbour) return;
 
       return fetch(`https://restcountries.com/v3.1/alpha/${firstNeighbour}`);
     })
-    .then(response => response.json())
-    .then(data => displayCountry(data[0], 'neighbour'));
+    .then((response) => response.json())
+    .then((data) => displayCountry(data[0], "neighbour"));
 };
 
-getCountryData('sweden');
+getCountryData("germany");
