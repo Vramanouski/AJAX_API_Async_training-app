@@ -45,7 +45,7 @@ body {
 }
 
 .neighbour::before {
-  content: 'Соседняя Страна';
+  content: "Neigbour";
   width: 100%;
   position: absolute;
   top: -5rem;
