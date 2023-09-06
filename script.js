@@ -3,6 +3,45 @@
 const btn = document.querySelector(".btn-country");
 const countriesContainer = document.querySelector(".countries");
 
+const displayError = function (message) {
+  countriesContainer.insertAdjacentText("beforeend", message);
+};
+
+// GPS function
+
+const displayCountryByGPS = function (lat, lng) {
+  fetch(`https://geocode.xyz/${lat},${lng}?geoit=json`)
+    .then((response) => {
+      if (!response.ok)
+        throw new Error(
+          `Проблема с геокодированием (ошибка ${response.status})`
+        );
+      return response.json();
+    })
+    .then((data) => {
+      console.log(data);
+      console.log(`You are in ${data.city}, ${data.country}`);
+      return getDataAndConvertToJSON(
+        `https://restcountries.com/v3.1/name/${data.country.toLowerCase()}`,
+        "Страна не найдена."
+      );
+    })
+    .then((data) => displayCountry(data[0]))
+    .catch((e) => {
+      console.error(`${e} 🧐`);
+      displayError(`Что-то пошло не так 🧐: ${e.message} Попробуйте ещё раз!`);
+    })
+    .finally(() => {
+      countriesContainer.style.opacity = 1;
+    })
+
+    .catch((e) => console.error(`${e.message} 🧐`));
+};
+
+displayCountryByGPS(35.756, 139.256);
+displayCountryByGPS(48.857, 2.358);
+displayCountryByGPS(40.708, -74.051);
+
 //////////////////////////////////////////////////////
 
 // const getCountryData = function (countryName) {
@@ -62,7 +101,6 @@ const displayCountry = function (data, className = "") {
 </article>`;
 
   countriesContainer.insertAdjacentHTML("beforeend", html);
-  countriesContainer.style.opacity = 1;
 };
 
 // const getCountryAndBorderCountries = function (countryName) {
@@ -100,18 +138,41 @@ const displayCountry = function (data, className = "") {
 
 //   const data = request.send();
 
+const getDataAndConvertToJSON = function (
+  url,
+  errorMessage = "Something went wrong"
+) {
+  return fetch(url).then((response) => {
+    if (!response.ok)
+      throw new Error(`Country does not exist. Code: ${response.status}`);
+    return response.json();
+  });
+};
 const getCountryData = function (countryName) {
-  fetch(`https://restcountries.com/v3.1/name/${countryName}`)
-    .then((response) => response.json())
+  getDataAndConvertToJSON(
+    `https://restcountries.com/v3.1/name/${countryName}`,
+    "Country does not exist"
+  )
     .then((data) => {
       displayCountry(data[0]);
+      if (!data[0].borders) throw new Error("No neighbours");
       const firstNeighbour = data[0].borders[0];
-      if (!firstNeighbour) return;
 
-      return fetch(`https://restcountries.com/v3.1/alpha/${firstNeighbour}`);
+      return getDataAndConvertToJSON(
+        `https://restcountries.com/v3.1/name/${firstNeighbour}`,
+        "Country does not exist"
+      );
     })
-    .then((response) => response.json())
-    .then((data) => displayCountry(data[0], "neighbour"));
+    .then((data) => displayCountry(data[0], "neighbour"))
+    .catch((e) => {
+      console.log(e);
+      displayError(`Error Code: ${e.message}`);
+    })
+    .finally(() => {
+      countriesContainer.style.opacity = 1;
+    });
 };
 
-getCountryData("germany");
+btn.addEventListener("click", function () {
+  getCountryData();
+});
